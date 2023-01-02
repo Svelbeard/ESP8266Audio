@@ -35,6 +35,7 @@ class AudioGeneratorWAV : public AudioGenerator
     void SetBufferSize(int sz) { buffSize = sz; }
     void SetLoop(bool loopSet);
     bool isLooping();
+    bool setNextFile(AudioFileSource *source, int index, bool looping);
 
   private:
     bool ReadU32(uint32_t *dest) { return file->read(reinterpret_cast<uint8_t*>(dest), 4); }
@@ -50,6 +51,8 @@ class AudioGeneratorWAV : public AudioGenerator
     uint32_t sampleRate;
     uint16_t bitsPerSample;
     bool looping;
+    AudioFileSource *nextFile[2];
+    bool nextLooping[2];
     
     uint32_t availBytes;
     uint32_t fileBytes;

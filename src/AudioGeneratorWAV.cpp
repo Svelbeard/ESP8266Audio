@@ -25,7 +25,11 @@ AudioGeneratorWAV::AudioGeneratorWAV()
 {
   running = false;
   looping = false;
+  nextLooping[0] = false;
+  nextLooping[1] = false;
   file = NULL;
+  nextFile[0] = NULL;
+  nextFile[1] = NULL;
   output = NULL;
   buffSize = 2048; // Needs to be able to store the whole sound file??
   buff = NULL;
@@ -49,6 +53,18 @@ bool AudioGeneratorWAV::isLooping()
   return looping;
 }
 
+bool AudioGeneratorWAV::setNextFile(AudioFileSource *source, int index, bool looping)
+{
+  if (!source) {
+    audioLogger->printf_P(PSTR("AudioGeneratorWAV::setNextFile: failed: invalid source\n"));
+    return false;
+  }
+  nextFile[index] = source;
+  nextLooping[index] = looping;
+  
+  return true;
+}
+
 bool AudioGeneratorWAV::stop()
 {
   if (!running) return true;
@@ -60,9 +76,30 @@ bool AudioGeneratorWAV::stop()
     availBytes = fileBytes;
 
     return false;
+  } else if (nextFile[0] != NULL){
+    // Start next file
+    file = nextFile[0];
+    looping = nextLooping[0];
+    nextFile[0] = nextFile[1];
+    nextLooping[0] = nextLooping[1];
+    nextFile[1] = NULL;
+    nextLooping[1] = false;
+
+    if (!file->isOpen()) {
+      audioLogger->printf_P(PSTR("AudioGeneratorWAV::stop: file not open\n"));
+      return false;
+    } 
+
+    if (!ReadWAVInfo()) {
+      audioLogger->printf_P(PSTR("AudioGeneratorWAV::stop: failed during ReadWAVInfo\n"));
+      return false;
+    }
+    return false;
   } else {
     running = false;
     looping = false;
+    nextLooping[0] = false;
+    nextLooping[1] = false;
     free(buff);
     buff = NULL;
     output->stop();
