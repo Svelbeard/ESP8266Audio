@@ -33,6 +33,8 @@ class AudioGeneratorWAV : public AudioGenerator
     virtual bool stop() override;
     virtual bool isRunning() override;
     void SetBufferSize(int sz) { buffSize = sz; }
+    void SetLoop(bool loopSet);
+    bool isLooping();
 
   private:
     bool ReadU32(uint32_t *dest) { return file->read(reinterpret_cast<uint8_t*>(dest), 4); }
@@ -47,8 +49,10 @@ class AudioGeneratorWAV : public AudioGenerator
     uint16_t channels;
     uint32_t sampleRate;
     uint16_t bitsPerSample;
+    bool looping;
     
     uint32_t availBytes;
+    uint32_t fileBytes;
 
     // We need to buffer some data in-RAM to avoid doing 1000s of small reads
     uint32_t buffSize;
