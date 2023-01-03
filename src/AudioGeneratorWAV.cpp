@@ -53,6 +53,23 @@ bool AudioGeneratorWAV::isLooping()
   return looping;
 }
 
+bool AudioGeneratorWAV::setNextFile(AudioFileSource *source, bool looping)
+{
+  if (!source) {
+    audioLogger->printf_P(PSTR("AudioGeneratorWAV::setNextFile: failed: invalid source\n"));
+    return false;
+  }
+  if (!NextFile()){
+    nextFile[0] = source;
+    nextLooping[0] = looping;
+  } else {
+    nextFile[1] = source;
+    nextLooping[1] = looping;
+  }
+
+  return true;
+}
+
 bool AudioGeneratorWAV::setNextFile(AudioFileSource *source, int index, bool looping)
 {
   if (!source) {
@@ -61,8 +78,26 @@ bool AudioGeneratorWAV::setNextFile(AudioFileSource *source, int index, bool loo
   }
   nextFile[index] = source;
   nextLooping[index] = looping;
-  
+
   return true;
+}
+
+bool AudioGeneratorWAV::NextFile()
+{
+  if (nextFile[0] == NULL){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool AudioGeneratorWAV::NextFile(int index)
+{
+  if (nextFile[index] == NULL){
+    return false;
+  } else {
+    return true;
+  }
 }
 
 bool AudioGeneratorWAV::stop()
