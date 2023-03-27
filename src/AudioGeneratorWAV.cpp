@@ -31,7 +31,7 @@ AudioGeneratorWAV::AudioGeneratorWAV()
   nextFile[0] = NULL;
   nextFile[1] = NULL;
   output = NULL;
-  buffSize = 2048; // Needs to be able to store the whole sound file??
+  buffSize = 512; // Needs to be able to store the whole sound file??
   buff = NULL;
   buffPtr = 0;
   buffLen = 0;
@@ -111,8 +111,10 @@ bool AudioGeneratorWAV::stop()
     availBytes = fileBytes;
 
     return false;
-  } else if (nextFile[0] != NULL){
-    // Start next file
+  } else if (NextFile()){
+    // Start next file 
+    file->close();
+    delete file;
     file = nextFile[0];
     looping = nextLooping[0];
     nextFile[0] = nextFile[1];
@@ -125,6 +127,8 @@ bool AudioGeneratorWAV::stop()
       return false;
     } 
 
+    free(buff);
+    buff = NULL;
     if (!ReadWAVInfo()) {
       audioLogger->printf_P(PSTR("AudioGeneratorWAV::stop: failed during ReadWAVInfo\n"));
       return false;
@@ -138,7 +142,10 @@ bool AudioGeneratorWAV::stop()
     free(buff);
     buff = NULL;
     output->stop();
-    return file->close();
+    file->close();
+    delete file;
+
+    return true;
   }
 }
 
@@ -353,7 +360,6 @@ bool AudioGeneratorWAV::ReadWAVInfo()
   };
   availBytes = u32;
   fileBytes = u32;
-  file->seek(file->getSize() - fileBytes, SEEK_CUR);
 
   // Now set up the buffer or fail
   buff = reinterpret_cast<uint8_t *>(malloc(buffSize));
