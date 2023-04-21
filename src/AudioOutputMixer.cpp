@@ -171,6 +171,19 @@ AudioOutputMixerStub *AudioOutputMixer::NewInput()
   return nullptr;
 }
 
+AudioOutputMixerStub *AudioOutputMixer::NewInput(int id)
+{
+  if (!stubAllocated[id]) {
+    stubAllocated[id] = true;
+    stubRunning[id] = false;
+    writePtr[id] = readPtr; // TODO - should it be 1 before readPtr?
+    AudioOutputMixerStub *stub = new AudioOutputMixerStub(this, id);
+    return stub;
+  
+  }
+  return nullptr;
+}
+
 void AudioOutputMixer::RemoveInput(int id)
 {
   stubAllocated[id] = false;
@@ -239,6 +252,10 @@ bool AudioOutputMixer::stop(int id)
 {
   stubRunning[id] = false;
   return true;
+}
+
+bool AudioOutputMixer::isStubRunning(int id){
+  return stubRunning[id];
 }
 
 
