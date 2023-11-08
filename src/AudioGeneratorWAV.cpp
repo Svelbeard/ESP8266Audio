@@ -178,6 +178,9 @@ bool AudioGeneratorWAV::GetBufferedData(int bytes, void *dest)
 bool AudioGeneratorWAV::loop()
 {
   if (!running) goto done; // Nothing to do here!
+  
+  // First, try and push in the stored sample.  If we can't, then punt and try later
+  if (!output->ConsumeSample(lastSample)) goto done; // Can't send, but no error detected
 
   // Try and stuff the buffer one sample at a time
   do
